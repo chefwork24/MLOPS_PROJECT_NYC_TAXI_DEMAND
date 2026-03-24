@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+.venv/
+
+data/raw/*.parquet
+data/processed/*.parquet
+data/features/*.parquet
+
+mlflow/mlruns/
+
+airflow/logs/
+airflow/__pycache__/
+.DS_Store
+*.log
