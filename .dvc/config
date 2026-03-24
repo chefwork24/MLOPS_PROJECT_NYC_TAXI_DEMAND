@@ -1,0 +1,4 @@
+[core]
+    remote = local_remote
+['remote "local_remote"']
+    url = /Users/rishwanthpb/dvc-remote/nyc-taxi
