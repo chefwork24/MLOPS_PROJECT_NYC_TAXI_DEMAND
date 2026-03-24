@@ -1,0 +1,21 @@
+pandas
+pyarrow
+fastparquet
+
+pyspark
+mlflow
+fastapi
+uvicorn
+pydantic
+prometheus-client
+dvc
+
+# ML
+xgboost
+lightgbm
+scikit-learn
+matplotlib
+seaborn
+jupyter
+
+apache-airflow-providers-fab
