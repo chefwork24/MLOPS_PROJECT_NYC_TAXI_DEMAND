@@ -15,3 +15,5 @@ airflow/logs/
 airflow/__pycache__/
 .DS_Store
 *.log
+
+notebooks/phase2_eda.ipynb
