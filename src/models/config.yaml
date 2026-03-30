@@ -1,0 +1,64 @@
+data:
+  features_dir: "../../data/features"
+  train_years: ["2019"]
+  val_months: ["2023-01", "2023-02"]
+  test_months: ["2023-03", "2023-04", "2020-04"]
+
+features:
+  cols:
+    - PULocationID
+    - hour_of_day
+    - day_of_week
+    - month
+    - is_weekend
+    - is_rush_hour
+    - demand_lag_1h
+    - demand_lag_24h
+    - demand_lag_168h
+    - rolling_mean_24h
+    - rolling_mean_7d
+    - is_airport_zone
+  target: demand
+  drop_na_cols:
+    - demand_lag_1h
+    - demand_lag_24h
+    - demand_lag_168h
+    - rolling_mean_24h
+    - rolling_mean_7d
+
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "nyc-taxi-demand"
+
+xgboost:
+  n_estimators: 500
+  max_depth: 6
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+
+lightgbm:
+  n_estimators: 500
+  max_depth: 6
+  learning_rate: 0.05
+  num_leaves: 63
+  subsample: 0.8
+  random_state: 42
+
+tft:
+  max_encoder_length: 168
+  max_prediction_length: 6
+  hidden_size: 32
+  attention_head_size: 2
+  dropout: 0.1
+  learning_rate: 0.001
+  max_epochs: 5
+  batch_size: 256    # increased from 64
+
+lstm:
+  epochs: 10
+  batch_size: 1024   # increased from 512
+  learning_rate: 0.001
+  hidden_size: 64
+  num_layers: 2
