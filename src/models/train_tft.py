@@ -19,17 +19,14 @@ p = cfg['tft']
 
 # ── Check device ──────────────────────────────────────────────────────────────
 if torch.backends.mps.is_available():
-    device = "mps"
     accelerator = "mps"
-    print("Using Apple MPS (GPU)")
+    print("Training on Apple MPS (GPU)")
 elif torch.cuda.is_available():
-    device = "cuda"
     accelerator = "gpu"
-    print("Using CUDA GPU")
+    print("Training on CUDA GPU")
 else:
-    device = "cpu"
     accelerator = "cpu"
-    print("Using CPU")
+    print("Training on CPU")
 
 # ── Load & prepare data ───────────────────────────────────────────────────────
 data = load_all_features(cfg)
@@ -69,7 +66,7 @@ val_loader   = val_dataset.to_dataloader(train=False, batch_size=p['batch_size']
 
 # ── Train ─────────────────────────────────────────────────────────────────────
 with mlflow.start_run(run_name="tft"):
-    mlflow.log_params({**p, "device": device})
+    mlflow.log_params({**p, "accelerator": accelerator})
 
     model = TemporalFusionTransformer.from_dataset(
         training,
@@ -81,19 +78,42 @@ with mlflow.start_run(run_name="tft"):
         log_interval=10,
     )
 
+    # Train on MPS/GPU
     trainer = pl.Trainer(
         max_epochs=p['max_epochs'],
         accelerator=accelerator,
         enable_progress_bar=True,
         gradient_clip_val=0.1,
     )
-
     trainer.fit(model, train_loader, val_loader)
 
-    predictions = model.predict(val_loader, return_y=True)
-    mae = MAE()(predictions.output, predictions.y[0])
-    mlflow.log_metric("val_mae", float(mae))
+    # ── Predict entirely on CPU to avoid device mismatch ─────────────────────
+    print("Running prediction on CPU...")
+    model = model.cpu()
+    model.eval()
+
+    all_outputs = []
+    all_targets = []
+
+    with torch.no_grad():
+        for batch, _ in val_loader:
+            # Move batch to CPU
+            batch = {k: v.cpu() if isinstance(v, torch.Tensor) else v
+                     for k, v in batch.items()}
+
+            output = model(batch)
+            pred   = output.prediction.cpu()
+            target = batch["decoder_target"].cpu()
+
+            all_outputs.append(pred)
+            all_targets.append(target)
+
+    outputs = torch.cat(all_outputs).squeeze()
+    targets = torch.cat(all_targets).squeeze()
+
+    mae_val = float((outputs - targets).abs().mean())
+    print(f"\nTFT val MAE: {mae_val:.2f}")
+    mlflow.log_metric("val_mae", mae_val)
 
     mlflow.pytorch.log_model(model, artifact_path="model")
-    print(f"\nTFT val MAE: {mae:.2f}")
     print("TFT run logged to MLflow")

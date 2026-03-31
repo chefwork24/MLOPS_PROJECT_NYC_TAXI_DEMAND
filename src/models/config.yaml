@@ -47,14 +47,14 @@ lightgbm:
   random_state: 42
 
 tft:
-  max_encoder_length: 168
+  max_encoder_length: 48      # reduced from 168
   max_prediction_length: 6
   hidden_size: 32
   attention_head_size: 2
   dropout: 0.1
   learning_rate: 0.001
   max_epochs: 5
-  batch_size: 256    # increased from 64
+  batch_size: 256
 
 lstm:
   epochs: 10
