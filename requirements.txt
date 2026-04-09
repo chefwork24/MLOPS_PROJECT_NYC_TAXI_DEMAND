@@ -19,3 +19,26 @@ seaborn
 jupyter
 
 apache-airflow-providers-fab
+torch 
+pytorch-forecasting 
+pytorch-lightning
+
+pyyaml
+
+fastapi
+uvicorn 
+prometheus-client 
+pydantic
+
+pytest 
+httpx
+
+fastapi
+uvicorn
+pydantic
+lightgbm
+pandas
+pyarrow
+prometheus-client
+scikit-learn
+numpy
