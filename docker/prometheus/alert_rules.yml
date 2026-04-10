@@ -1,0 +1,29 @@
+groups:
+  - name: drift_alerts
+    rules:
+      - alert: DemandDriftDetected
+        expr: demand_drift_score > 0.15
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Demand drift detected"
+          description: "KL divergence score {{ $value }} exceeds threshold 0.15"
+
+      - alert: HighErrorRate
+        expr: rate(api_error_total[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High API error rate"
+          description: "Error rate {{ $value }} exceeds 5%"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(prediction_latency_seconds_bucket[5m])) > 0.2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High prediction latency"
+          description: "P95 latency {{ $value }}s exceeds 200ms"
