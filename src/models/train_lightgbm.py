@@ -1,6 +1,7 @@
 import mlflow
 import mlflow.lightgbm
 import lightgbm as lgb
+import os
 from prepare_data import load_all_features, split_data, get_features_and_target
 from metrics import evaluate
 from config_loader import load_config
@@ -31,6 +32,11 @@ with mlflow.start_run(run_name="lightgbm"):
         mlflow.log_metric(f"val_{k}", v)
     for k, v in test_metrics.items():
         mlflow.log_metric(f"test_{k}", v)
+
+    # Save model natively to disk for fast API loading
+    os.makedirs("../../models", exist_ok=True)
+    model.booster_.save_model("../../models/lightgbm_model.txt")
+    print("Model saved to models/lightgbm_model.txt")
 
     mlflow.lightgbm.log_model(model, artifact_path="model")
     print("\nLightGBM run logged to MLflow")

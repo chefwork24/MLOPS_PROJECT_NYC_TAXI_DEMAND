@@ -1,0 +1,26 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install Java for Spark (needed if Spark runs inside container)
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jdk \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY src/api/       ./src/api/
+COPY models/        ./models/
+
+# Set working directory to api folder
+WORKDIR /app/src/api
+
+# Expose port
+EXPOSE 8000
+
+# Start FastAPI
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

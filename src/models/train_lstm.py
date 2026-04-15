@@ -7,6 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 from prepare_data import load_all_features, split_data, get_features_and_target
 from metrics import evaluate
 from config_loader import load_config
+import os
 
 cfg = load_config()
 
@@ -42,7 +43,8 @@ p = cfg['lstm']
 train_loader = DataLoader(DemandDataset(X_train, y_train), batch_size=p['batch_size'], shuffle=True)
 val_loader   = DataLoader(DemandDataset(X_val,   y_val),   batch_size=p['batch_size'])
 
-model     = LSTMModel(X_train.shape[1], p['hidden_size'], p['num_layers'])
+device    = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+model     = LSTMModel(X_train.shape[1], p['hidden_size'], p['num_layers']).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=p['learning_rate'])
 criterion = nn.MSELoss()
 
@@ -53,6 +55,7 @@ with mlflow.start_run(run_name="lstm"):
         model.train()
         train_loss = 0
         for X_batch, y_batch in train_loader:
+            X_batch, y_batch = X_batch.to(device), y_batch.to(device)
             optimizer.zero_grad()
             loss = criterion(model(X_batch), y_batch)
             loss.backward()
@@ -63,6 +66,7 @@ with mlflow.start_run(run_name="lstm"):
         val_loss = 0
         with torch.no_grad():
             for X_batch, y_batch in val_loader:
+                X_batch, y_batch = X_batch.to(device), y_batch.to(device)
                 val_loss += criterion(model(X_batch), y_batch).item()
 
         avg_train = train_loss / len(train_loader)
@@ -73,8 +77,8 @@ with mlflow.start_run(run_name="lstm"):
 
     model.eval()
     with torch.no_grad():
-        val_preds  = model(torch.tensor(X_val.values,  dtype=torch.float32).unsqueeze(1)).numpy()
-        test_preds = model(torch.tensor(X_test.values, dtype=torch.float32).unsqueeze(1)).numpy()
+        val_preds  = model(torch.tensor(X_val.values,  dtype=torch.float32).unsqueeze(1).to(device)).cpu().numpy()
+        test_preds = model(torch.tensor(X_test.values, dtype=torch.float32).unsqueeze(1).to(device)).cpu().numpy()
 
     val_metrics  = evaluate(y_val,  val_preds,  "LSTM-Val")
     test_metrics = evaluate(y_test, test_preds, "LSTM-Test")
@@ -83,6 +87,11 @@ with mlflow.start_run(run_name="lstm"):
         mlflow.log_metric(f"val_{k}", v)
     for k, v in test_metrics.items():
         mlflow.log_metric(f"test_{k}", v)
+
+    # Save model to disk
+    os.makedirs("../../models", exist_ok=True)
+    torch.save(model.state_dict(), "../../models/lstm_model.pth")
+    print("Model saved to models/lstm_model.pth")
 
     mlflow.pytorch.log_model(model, artifact_path="model")
     print("\nLSTM run logged to MLflow")

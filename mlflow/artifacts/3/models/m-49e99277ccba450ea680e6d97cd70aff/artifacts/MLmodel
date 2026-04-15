@@ -1,0 +1,23 @@
+artifact_path: /Users/rishwanthpb/MLOPS/MLOPS_PROJECT/mlflow/artifacts/3/models/m-49e99277ccba450ea680e6d97cd70aff/artifacts
+flavors:
+  python_function:
+    config:
+      device: null
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pytorch
+    pickle_module_name: mlflow.pytorch.pickle_module
+    python_version: 3.12.7
+  pytorch:
+    code: null
+    model_data: data
+    pytorch_version: 2.11.0
+mlflow_version: 3.10.1
+model_id: m-49e99277ccba450ea680e6d97cd70aff
+model_size_bytes: 220225
+model_uuid: m-49e99277ccba450ea680e6d97cd70aff
+prompts: null
+run_id: 623db06323534c109d789a73803e4d48
+utc_time_created: '2026-03-30 11:19:13.997357'

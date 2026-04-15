@@ -42,3 +42,9 @@ pyarrow
 prometheus-client
 scikit-learn
 numpy
+
+streamlit 
+plotly 
+requests 
+folium 
+streamlit-folium

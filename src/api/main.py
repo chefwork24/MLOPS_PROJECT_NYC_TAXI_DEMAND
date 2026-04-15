@@ -3,6 +3,11 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from prometheus_client import make_asgi_app
+import sys
+import os
+sys.path.insert(0, "/Users/rishwanthpb/MLOPS/MLOPS_PROJECT/src/monitoring")
+from drift_detector import compute_drift_score
+import pandas as pd
 
 from schemas import (
     PredictRequest, PredictResponse,
@@ -92,4 +97,28 @@ def recommend(request: RecommendRequest):
         return {"zone_id": request.zone_id, **result}
     except Exception as e:
         ERROR_COUNT.labels(endpoint="recommend").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update-drift")
+def update_drift():
+    """
+    Called periodically to recompute drift score.
+    Reads latest feature file and computes KL divergence.
+    """
+    try:
+        features_dir = "/Users/rishwanthpb/MLOPS/MLOPS_PROJECT/data/features"
+
+        # Load most recent month's features
+        files = sorted([
+            f for f in os.listdir(features_dir)
+            if f.endswith(".parquet")
+        ])
+        latest_file = os.path.join(features_dir, files[-1])
+        df = pd.read_parquet(latest_file)
+
+        score = compute_drift_score(df)
+        DRIFT_SCORE.set(score)
+
+        return {"drift_score": score, "file": files[-1]}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
