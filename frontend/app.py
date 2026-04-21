@@ -90,6 +90,26 @@ if page == "📊 Dashboard":
 
     top_zones = [161, 162, 237, 236, 230, 186, 48, 170, 234, 142]
 
+    # batch_payload = {
+    #     "zones": [
+    #         {
+    #             "zone_id": z,
+    #             "hour_of_day": 18,
+    #             "day_of_week": 2,
+    #             "month": 1,
+    #             "is_weekend": 0,
+    #             "is_rush_hour": 1,
+    #             "demand_lag_1h": 1200.0,    # high lag triggers surge
+    #             "demand_lag_24h": 1100.0,
+    #             "demand_lag_168h": 1000.0,
+    #             "rolling_mean_24h": 400.0,   # low rolling mean = high ratio
+    #             "rolling_mean_7d": 390.0,
+    #             "is_airport_zone": 1 if z in [1, 132, 138] else 0
+    #         }
+    #         for z in top_zones
+    #     ]
+    # }
+
     batch_payload = {
         "zones": [
             {
@@ -220,26 +240,45 @@ elif page == "🗺️ Zone Heatmap":
         138: (40.7769, -73.8740),  # LaGuardia Airport
         1:   (40.6895, -74.1745),  # Newark Airport
     }
-
     batch_payload = {
         "zones": [
             {
                 "zone_id": z,
                 "hour_of_day": 18,
                 "day_of_week": 2,
-                "month": 4,
+                "month": 1,
                 "is_weekend": 0,
                 "is_rush_hour": 1,
-                "demand_lag_1h": 400.0,
-                "demand_lag_24h": 380.0,
-                "demand_lag_168h": 370.0,
-                "rolling_mean_24h": 350.0,
-                "rolling_mean_7d": 360.0,
+                "demand_lag_1h": 1200.0,    # high lag triggers surge
+                "demand_lag_24h": 1100.0,
+                "demand_lag_168h": 1000.0,
+                "rolling_mean_24h": 400.0,   # low rolling mean = high ratio
+                "rolling_mean_7d": 390.0,
                 "is_airport_zone": 1 if z in [1, 132, 138] else 0
             }
             for z in zone_coords.keys()
         ]
     }
+
+    # batch_payload = {
+    #     "zones": [
+    #         {
+    #             "zone_id": z,
+    #             "hour_of_day": 18,
+    #             "day_of_week": 2,
+    #             "month": 4,
+    #             "is_weekend": 0,
+    #             "is_rush_hour": 1,
+    #             "demand_lag_1h": 400.0,
+    #             "demand_lag_24h": 380.0,
+    #             "demand_lag_168h": 370.0,
+    #             "rolling_mean_24h": 350.0,
+    #             "rolling_mean_7d": 360.0,
+    #             "is_airport_zone": 1 if z in [1, 132, 138] else 0
+    #         }
+    #         for z in zone_coords.keys()
+    #     ]
+    # }
 
     result = get_batch_prediction(batch_payload)
 
